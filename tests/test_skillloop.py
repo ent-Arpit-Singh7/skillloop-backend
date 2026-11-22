@@ -1086,17 +1086,23 @@ def test_user_block_unblock_and_list(client, make_user):
     assert client.delete(route, headers=reporter_headers).status_code == 404
 
 
-def test_profile_avatar_upload_and_static_serving(client, make_user):
+def test_profile_avatar_upload(client, make_user, monkeypatch):
+    from app.core import profile_storage
+
+    async def upload(name, content, content_type):
+        assert content_type == "image/png"
+        assert content.startswith(b"\x89PNG\r\n\x1a\n")
+        return f"https://example.supabase.co/storage/v1/object/public/profile-images/{name}"
+
+    monkeypatch.setattr(profile_storage, "upload_profile_image", upload)
+    monkeypatch.setattr(profile_storage, "delete_profile_image", lambda name: None)
     headers, _ = make_user("avatar@example.com")
     # PNG signature is checked server-side; the route does not trust the filename.
     png_signature = b"\x89PNG\r\n\x1a\n" + b"test-image-content"
     uploaded = client.post("/api/me/avatar", headers={**headers, "Content-Type": "image/png"}, content=png_signature)
     assert uploaded.status_code == 200, uploaded.text
     photo_url = uploaded.json()["profile_photo"]
-    assert photo_url.startswith("/uploads/profiles/")
-    served = client.get(photo_url)
-    assert served.status_code == 200
-    assert served.content == png_signature
+    assert photo_url.startswith("https://example.supabase.co/storage/v1/object/public/profile-images/")
 
 
 

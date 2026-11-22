@@ -5,7 +5,7 @@
 - Forgot-password is not implemented.
 - WhatsApp-style chat REST and WebSocket endpoints have been removed from the active API. Connections remain for learning requests and session scheduling only. The legacy Conversation/Message tables remain in the database schema to avoid destructive changes to linked data. New connection acceptance no longer creates Conversation rows.
 - Admin suspension/blocking remains supported. User-to-user blocking is left in place pending the team's discussion about whether it duplicates admin moderation.
-- Profile-photo upload remains optional/undecided; the existing local-disk implementation is retained for now.
+- Profile photos use Supabase Storage. Configure `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and optionally `SUPABASE_STORAGE_BUCKET` before enabling avatar uploads.
 
 ## Database migration
 Run `docs/migrations/002_soft_delete_and_remove_chat.sql` against the existing SkillLoop database after taking a backup. It adds `deleted_at`, expands the account-status check constraint, and replaces the connection-acceptance function so it does not create new chat conversations.

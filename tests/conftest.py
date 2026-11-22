@@ -21,15 +21,12 @@ try:
     _db_name = (make_url(TEST_URL).database or "").lower()
 except Exception:
     _db_name = ""
-if not TEST_URL.startswith("postgresql") or "test" not in _db_name:
-    pytest.exit(
-        "Set TEST_DATABASE_URL to a throwaway PostgreSQL database whose NAME contains 'test' "
-        "(for example postgresql+psycopg://user:pw@localhost:5432/skillloop_test). "
-        "The tests wipe that database.",
-        returncode=2,
-    )
-
-os.environ["DATABASE_URL"] = TEST_URL
+HAS_TEST_DATABASE = TEST_URL.startswith("postgresql") and "test" in _db_name
+if HAS_TEST_DATABASE:
+    os.environ["DATABASE_URL"] = TEST_URL
+else:
+    # Database-free unit tests can run without configuring the destructive integration suite.
+    os.environ["DATABASE_URL"] = "postgresql+psycopg://unused:unused@localhost/skillloop_test"
 os.environ["SECRET_KEY"] = "test-secret-key-for-pytest-only-0123456789"
 
 from fastapi.testclient import TestClient  # noqa: E402
@@ -49,9 +46,11 @@ TABLES = (
 )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def database_schema():
     """Build the team's schema once per test run."""
+    if not HAS_TEST_DATABASE:
+        pytest.skip("Integration tests require a disposable TEST_DATABASE_URL")
     with engine.begin() as conn:
         conn.exec_driver_sql("DROP SCHEMA public CASCADE")
         conn.exec_driver_sql("CREATE SCHEMA public")
@@ -83,6 +82,14 @@ def client(database_schema):
         conn.execute(text("INSERT INTO Language (language_name) VALUES ('English'), ('Hindi'), ('Spanish')"))
     with TestClient(app) as c:
         yield c
+
+
+def pytest_collection_modifyitems(items):
+    if not HAS_TEST_DATABASE:
+        skip = pytest.mark.skip(reason="Integration tests require a disposable TEST_DATABASE_URL")
+        for item in items:
+            if "test_skillloop.py" in str(item.fspath):
+                item.add_marker(skip)
 
 
 @pytest.fixture()

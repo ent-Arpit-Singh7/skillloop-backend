@@ -1,5 +1,4 @@
 """Profile, languages, teaching skills, learning skills, availability (always the logged-in user's own)."""
-from pathlib import Path
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -7,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 
 from app.core.config import settings
+from app.core import profile_storage
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -114,20 +114,35 @@ async def upload_avatar(request: Request, user: User = Depends(get_current_user)
     extension, validator = allowed[content_type]
     if not validator(chunks):
         raise HTTPException(status_code=415, detail="Image content does not match its Content-Type")
-    upload_dir = Path(__file__).resolve().parents[2] / "uploads" / "profiles"
-    upload_dir.mkdir(parents=True, exist_ok=True)
     filename = f"{user.user_id}_{uuid4().hex}.{extension}"
-    destination = upload_dir / filename
-    destination.write_bytes(chunks)
     old_photo = user.profile_photo
-    user.profile_photo = f"/uploads/profiles/{filename}"
-    db.commit()
+    try:
+        public_url = await profile_storage.upload_profile_image(filename, bytes(chunks), content_type)
+    except profile_storage.ProfileStorageError:
+        raise HTTPException(status_code=502, detail="Profile image storage is unavailable") from None
+
+    user.profile_photo = public_url
+    try:
+        db.commit()
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        try:
+            await profile_storage.delete_profile_image(filename)
+        except profile_storage.ProfileStorageError:
+            pass
+        raise HTTPException(status_code=500, detail="Could not save profile image") from None
+
     db.refresh(user)
-    # Remove only files inside this app's managed profile-upload directory.
-    if old_photo and old_photo.startswith("/uploads/profiles/"):
-        old_path = upload_dir / Path(old_photo).name
-        if old_path != destination and old_path.is_file():
-            old_path.unlink(missing_ok=True)
+    old_object = profile_storage.profile_object_from_public_url(old_photo, user.user_id)
+    if old_object and old_object != filename:
+        try:
+            await profile_storage.delete_profile_image(old_object)
+        except profile_storage.ProfileStorageError:
+            # Database state is already committed; keep the new image working.
+            pass
     return user
 
 

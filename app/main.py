@@ -1,10 +1,8 @@
 import logging
-from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from psycopg import errors as pg_errors
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
@@ -35,11 +33,6 @@ app.add_middleware(
 
 for r in (auth, profile, search, requests, sessions, chat, notifications, blocks, admin):
     app.include_router(r.router)
-
-UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
 
 # The database enforces many project rules itself (triggers, unique indexes, checks).
 # When it refuses something, turn its error into a clear JSON response instead of a crash.

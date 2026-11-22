@@ -8,7 +8,7 @@ FastAPI + SQLAlchemy backend for the SkillLoop skill-exchange application.
 - Forgot-password is not included.
 - One-to-one text chat is included through authenticated REST endpoints. It reuses the existing Conversation/Message tables, creates a conversation on first use of an accepted connection, and does not use WebSockets. Messages cannot be edited or deleted; only the recipient can mark incoming messages as read.
 - User moderation is admin-controlled: a user submits a report, an admin reviews it, and the admin can resolve it with `User Blocked` to lock the reported account or `User Suspended` to suspend it. Users cannot directly lock/block other users.
-- Profile-photo storage is undecided. The existing optional local-disk upload is retained temporarily and can be removed if the team decides not to ship it.
+- Profile photos are stored in the public Supabase Storage bucket configured by `SUPABASE_STORAGE_BUCKET` (default `profile-images`). Configure `SUPABASE_URL` and the server-side `SUPABASE_SECRET_KEY` in the backend environment.
 
 ## Stack
 - Python 3.10+

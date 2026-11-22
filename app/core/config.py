@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     login_account_rate_limit_attempts: int = 5
     login_account_rate_limit_window_seconds: int = 900
     max_profile_image_bytes: int = 5 * 1024 * 1024
+    supabase_url: str | None = None
+    supabase_secret_key: str | None = None
+    supabase_storage_bucket: str = "profile-images"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
