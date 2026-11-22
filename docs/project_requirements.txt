@@ -1,0 +1,277 @@
+CURRENT MVP OVERRIDE (meeting decision, 13 November 2026): The older chat requirements below are superseded. WhatsApp-style messaging and WebSocket chat are dropped; forgot-password is dropped. User deletion must be soft deletion (retain the user row and linked data, set account_status='Deleted', and block access). Profile-photo storage remains undecided. User-to-user blocking is pending discussion against admin report-based moderation.
+
+🔵 SkillLoop
+Peer-to-Peer Skill Learning, Teaching & Collaboration Platform
+Motto: Learn. Teach. Connect. Grow.
+1. 👤 User Profile — 🔐 LOCKED
+A user can both teach and learn. There is no separate Teacher/Learner selection.
+Basic Information
+Profile Photo
+Full Name
+Location — City/Country
+Short Bio
+Languages
+Languages
+Skills I Can Teach
+Each skill contains:
+Skill Name
+Category — selected from Admin-managed categories
+Skill Level — Beginner / Intermediate / Advanced
+Short Description
+Skills I Want to Learn
+Each skill contains:
+Skill Name
+Category — selected from Admin-managed categories
+Current Level — Beginner / Intermediate / Advanced
+Learning Goal
+Availability
+Day
+Start Time
+End Time
+Multiple slots allowed
+Multiple slots on the same day allowed
+Add/Edit/Delete slots
+No complex calendar
+Reviews
+Average rating
+Reviews received
+2. 🔎 Search & Discover — 🔐 LOCKED
+Users can search by:
+Skill
+Person/User
+Filters
+Skill Category
+Skill Level
+Language
+Availability
+Search Result Shows
+Profile Photo
+Name
+Location
+Skills they can teach
+Skill Level
+Languages
+Availability
+Rating
+Explicitly excluded
+❌ AI matching
+❌ Recommendation system
+The user simply searches and discovers people themselves.
+3. 🤝 Learning / Connection Requests — 🔐 LOCKED
+After finding someone through Search:
+Sender
+Can send a request to learn a skill that the other person teaches.
+Request contains:
+Sender
+Receiver
+Requested Skill
+Optional Message
+Request Date
+Status
+Status
+Pending
+Accepted
+Rejected
+Actions
+Receiver:
+Accept
+Reject
+Sender:
+Cancel pending request
+After acceptance
+The two users become connected and Chat becomes available.
+4. 💬 Chat — 🔐 LOCKED
+Type
+Basic 1-to-1 text chat
+Available when
+Connection request accepted → ✅
+Scheduled session → ✅
+Completed session → ✅
+Future conversations → ✅
+Chat is connected to the user connection, not a particular session.
+Not available when
+No connection
+Request pending
+Request rejected without a previous connection
+User blocked
+Chat contains
+Chat list
+Message text
+Sender
+Receiver
+Timestamp
+Unread indicator
+Not included
+❌ Group chat
+❌ Voice/video calling
+❌ File sharing
+❌ Reactions/stickers
+❌ Message editing
+❌ Message deletion
+5. 📅 Session Scheduling — DECIDED, NOT YET 🔐 FORMALLY LOCKED
+Who can propose?
+Only the teacher of the selected skill.
+Flow
+Teacher proposes → Pending → Learner accepts/rejects
+If accepted:
+Pending → Scheduled
+If rejected:
+Pending → Rejected
+Teacher enters exactly:
+Skill / Topic
+Date
+Start Time
+Duration
+Meeting Link
+Optional Note
+Online-only
+Sessions are online.
+Actual meeting happens outside SkillLoop.
+Zoom/Google Meet can be used.
+SkillLoop stores/displays the meeting link.
+Learner sees the meeting link after accepting.
+No built-in video calling.
+Session statuses
+Pending
+Scheduled
+Rejected
+Cancelled
+Completed
+Cancellation
+Teacher can cancel a scheduled session.
+Scheduled → Cancelled
+Learner cannot cancel in the MVP.
+No rescheduling feature.
+If learner has an issue, they can communicate through Chat.
+Completion
+After the session takes place, teacher manually marks it Completed.
+6. ⭐ Rating & Review — DECIDED
+Who can review?
+Only the learner reviews the teacher.
+Rating
+1–5 stars
+Written review
+Optional
+Learner may submit only a star rating.
+Frequency
+One review per completed session.
+Therefore:
+Session 1 → Review
+Session 2 → Review
+Session 3 → Review
+A learner can review the same teacher multiple times if they have multiple completed sessions.
+Editing
+❌ No editing after submission.
+Display
+Reviews appear on the teacher's profile.
+7. 🔔 Notifications — DECIDED
+Type
+Basic in-app notifications only.
+Notification events
+New learning/connection request
+Request accepted
+Request rejected
+New session proposal
+Session accepted/rejected
+Session cancelled
+New chat message
+New review received by teacher
+Notification behavior
+Notifications remain in the notification list.
+Unread notification has an indicator/badge.
+Opening a notification marks it Read.
+Read notifications remain visible.
+No automatic deletion after viewing.
+❌ No "Mark all as read"
+❌ No email notifications
+❌ No SMS
+❌ No push-notification infrastructure
+❌ No complex notification settings
+8. 🔐 Authentication
+Already part of the overall MVP:
+Register
+Login
+A normal registered user gets the USER role.
+Admin access is handled separately and is not selected by normal users during registration.
+9. 👑 Admin — Supporting Role
+Admin is separate from normal users.
+Admin capabilities
+Admin Dashboard
+Overview
+Manage Users
+View users
+Suspend/block users as needed
+Manage Skill Categories
+Add
+Edit
+Delete/manage categories
+Reports
+Review reported users/content and take appropriate administrative action
+Important
+Normal users cannot create skill categories.
+They select categories from the categories managed by Admin.
+🔄 COMPLETE USER JOURNEY
+Putting everything together:
+Register / Login
+       ↓
+Create Profile
+       ↓
+Add Skills
+ ┌───────────────┐
+ ↓               ↓
+Teach Skills   Learn Skills
+       ↓
+Set Availability
+       ↓
+Search & Discover
+       ↓
+View User Profile
+       ↓
+Send Learning Request
+       ↓
+     Pending
+    ↙       ↘
+Reject      Accept
+  ↓            ↓
+Rejected    Connected
+               ↓
+             Chat
+               ↓
+      Teacher proposes session
+               ↓
+            Pending
+           ↙       ↘
+       Reject      Accept
+         ↓           ↓
+      Rejected    Scheduled
+                      ↓
+               Online Session
+                      ↓
+             Teacher marks Completed
+                      ↓
+             Learner Rates Teacher
+                      ↓
+               Review on Profile
+And notifications support the important events throughout this flow.
+🚫 Deliberately NOT in the MVP
+To keep SkillLoop at a medium-difficulty, manageable capstone scope, we have excluded:
+❌ AI matching/recommendations
+❌ AI tutor
+❌ AI learning roadmap
+❌ Payments
+❌ Offline sessions
+❌ Built-in video calling
+❌ Group chat
+❌ Voice messages
+❌ File sharing
+❌ Complex calendar
+❌ Recurring sessions
+❌ Rescheduling
+❌ Gamification
+❌ Badges/achievements
+❌ Full LMS
+❌ Collaborative whiteboard/tools
+❌ Social-media-style feed/followers
+❌ Complex notification settings
+📌 One important status point
+The core decisions are now very well defined, but I would not yet call the entire feature set officially locked, because we should do one final consistency check—especially around Session Scheduling, Rating & Review, and Notifications—before we freeze everything.
